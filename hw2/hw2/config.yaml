@@ -1,0 +1,11 @@
+learning:
+  step_size: 0.6
+  batch_size: 20
+  num_iters: 3000
+  decay_rate: 0.999
+  lambda_val: 0.0001 
+spiral_data:
+  num_samples: 200
+  noise_stdev: 0.05
+display:
+  refresh_rate: 10

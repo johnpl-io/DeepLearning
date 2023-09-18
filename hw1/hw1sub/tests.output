@@ -1,0 +1,16 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.3, pytest-7.4.1, pluggy-1.3.0
+rootdir: /home/john/DeepLearning
+collected 17 items
+
+tests/basis_tests.py ......                                              [ 35%]
+tests/integration_tests.py ...                                           [ 52%]
+tests/linear_tests.py ........                                           [100%]
+
+=============================== warnings summary ===============================
+venv/lib/python3.11/site-packages/tensorflow/python/debug/cli/debugger_cli_common.py:19
+  /home/john/DeepLearning/venv/lib/python3.11/site-packages/tensorflow/python/debug/cli/debugger_cli_common.py:19: DeprecationWarning: module 'sre_constants' is deprecated
+    import sre_constants
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 17 passed, 1 warning in 1.85s =========================

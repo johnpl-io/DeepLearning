@@ -10,7 +10,7 @@ from tqdm import trange
 import idx2numpy
 from Adam import Adam
 import os as os
-
+import gradio as gr
 
 parser = argparse.ArgumentParser(
     prog="Spiral MLP",
@@ -51,25 +51,36 @@ def get_l2_regularization(lambda_val, weights):
     l2 = tf.reduce_sum([tf.reduce_sum(w**2) for w in weights if w.name != 'Linear/b:0'])
     return lambda_val * l2
 
+def load_and_preprocess_data(labels_file, images_file):
+    # Load training or testing data
+    labels_data = idx2numpy.convert_from_file(labels_file)
+    images_data = idx2numpy.convert_from_file(images_file)
+    images_data = images_data / 255.0
 
+    # Convert data types
+    images_data = images_data.astype(np.float32)
+    labels_data = labels_data.astype(np.int64)
+    n_images, im_size = images_data.shape[:2]
+    images_data = images_data.reshape(n_images, im_size, im_size, 1)
+    return images_data, labels_data
 
                  
 labels_file = 'train-labels-idx1-ubyte'
 images_file = 'train-images-idx3-ubyte'
+test_labels_file = 't10k-labels-idx1-ubyte'
+test_images_file = 't10k-images-idx3-ubyte'
 
-labels_data = idx2numpy.convert_from_file(labels_file)
-images_data = idx2numpy.convert_from_file(images_file)
-images_data = images_data / 255.0
-images_data = images_data.astype(np.float32)
-labels_data = labels_data.astype(np.int64)
+images_data, labels_data = load_and_preprocess_data(labels_file, images_file)
+images_test_data, labels_test_data = load_and_preprocess_data(test_labels_file, test_images_file)
+
 # Display number of instances:
 n_images, im_size = images_data.shape[:2]
 n_labels = labels_data.shape[0]
 print(f"There is {n_images} images.")
 print(f"There is {n_labels} labels.")
 print(f"The images size is {im_size}.")
-import matplotlib.pyplot as plt
-images_data = images_data.reshape(n_images, im_size, im_size, 1)
+
+
 
 #spliting test and training data 
 train_images_data = images_data[:50000]
@@ -84,9 +95,15 @@ conv_cnn = Classifier(
     layer_kernel_sizes=[(3, 3), (3, 3), (3,3)],
     num_classes=10,
 )
+def test_acc(img):
+    img = img / 255.0
+    img.astype(np.float32)
+    img = img.reshape(1,28,28,1)
+    z =  conv_cnn(img)
+    return int(np.argmax(z, axis = 1)[0])
 
 
-bar = trange(5000)
+bar = trange(1000)
 
 rng = tf.random.get_global_generator()
 rng.reset_from_seed(0x43966E87BD57227011B5B03B58785EC1)
@@ -100,8 +117,8 @@ for i in bar:
         train_labels_batch = tf.gather(train_labels_data, batch_indices)
         est_labels = conv_cnn(train_images_batch)
         loss = get_loss(labels=train_labels_batch, logits = est_labels)
-        l2 = get_l2_regularization(0.001, conv_cnn.trainable_variables)
-        cost = loss + l2
+        #l2 = get_l2_regularization(0.001, conv_cnn.trainable_variables)
+        cost = loss #+ l2
 
     
         
@@ -121,7 +138,36 @@ for i in bar:
         
 
 
-print(get_accuracy(conv_cnn(val_images_data[0:1000]), val_labels_data[0:1000]))
+import numpy as np
+
+# Assuming you have a function conv_cnn(images) that returns predictions
+# and a function get_accuracy(predictions, labels) that calculates accuracy
+
+# Initialize an empty list to store individual accuracies
+individual_accuracies = []
+
+# Split the test data into chunks of 1,000 data points
+chunk_size = 1000
+for i in range(0, len(images_test_data), chunk_size):
+    chunk_images = images_test_data[i:i+chunk_size]
+    chunk_labels = labels_test_data[i:i+chunk_size]
+
+    chunk_predictions = conv_cnn(chunk_images)
+
+    accuracy = get_accuracy(chunk_predictions, chunk_labels)
+
+    individual_accuracies.append(accuracy)
+
+mean_accuracy = np.mean(individual_accuracies)
+
+print(f"Accuracy: {mean_accuracy}%")
+
+gr.Interface(fn=test_acc,
+             inputs="sketchpad",
+             outputs="label",
+             live=True).launch()
+
+
 #print(get_accuracy(conv_cnn(val_images_data[5000:]), val_labels_data[5000:]))
 # Display an element:
 #element = 10

@@ -2,8 +2,8 @@ import tensorflow as tf
 import numpy as np
 from Conv2d import Conv2d
 from dense import DenseLayer
-
-
+import math
+from dropout import DropLayer
 class Classifier(tf.Module):
     def __init__(
         self,
@@ -33,18 +33,19 @@ class Classifier(tf.Module):
                     activation=tf.nn.relu,
                 )
             )
+            self.conv_layers.append(DropLayer(0.2))
 
         out_width = 0
         self.batch_size = input_shape[0]
         i_width = input_shape[1]
         for x in range(0, len(layer_kernel_sizes)):
-            out_width = i_width - layer_kernel_sizes[x][0] + 1
+            out_width = math.ceil((i_width - layer_kernel_sizes[x][0] + 1)/strides[0])
             i_width = out_width
         self.dense_layer = [
             DenseLayer(
                 num_inputs=(out_width**2) * layer_depths[-1],
                 num_outputs=num_classes,
-                activation=tf.nn.softmax,
+               
             )
         ]
 

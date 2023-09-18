@@ -10,14 +10,15 @@ def xavier_init(shape, in_dim, out_dim):
 class Conv2d(tf.Module):
     def __init__(self, input_shape, filters, kernel_size, strides = (1, 1), activation = tf.identity):
         self.w = tf.Variable(
-            xavier_init(shape=[kernel_size[0], kernel_size[1], input_shape,  filters], in_dim = 1, out_dim = filters),
+            xavier_init(shape=[kernel_size[0], kernel_size[1], input_shape,  filters], in_dim = input_shape, out_dim = filters),
             trainable=True,
             name="Conv/w",
         )
 
         self.activation = activation
         self.strides = strides
-        self.output_shape = self.w.shape[-1]
+        self.output_shape = filters
+       
 
 
         
@@ -26,10 +27,4 @@ class Conv2d(tf.Module):
         return self.activation(f)
 
 
-conv2dobj = Conv2d(1, 5, kernel_size=(2,2))
-x = np.zeros((4,28,28,1))
 
-z = conv2dobj(x)
-
-    #filters how many channels
-    #kernel size size of kernel

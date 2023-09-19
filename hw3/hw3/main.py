@@ -12,6 +12,7 @@ from Adam import Adam
 import os as os
 import gradio as gr
 
+
 parser = argparse.ArgumentParser(
     prog="Spiral MLP",
     description="Fits a linear model to some data, given a config",
@@ -162,10 +163,10 @@ mean_accuracy = np.mean(individual_accuracies)
 
 print(f"Accuracy: {mean_accuracy}%")
 
-gr.Interface(fn=test_acc,
-             inputs="sketchpad",
-             outputs="label",
-             live=True).launch()
+#gr.Interface(fn=test_acc,
+ #            inputs="sketchpad",
+ #            outputs="label",
+ #            live=True).launch()
 
 
 #print(get_accuracy(conv_cnn(val_images_data[5000:]), val_labels_data[5000:]))

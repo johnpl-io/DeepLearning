@@ -16,26 +16,40 @@ def unpickle(file):
         myDict = pickle.load(fo, encoding='latin1')
     return myDict
 
-dict = unpickle('cifar-100-python/train')
-features = dict['data'].reshape(50000, 3, 32, 32).transpose(0, 2, 3, 1)
-labels = np.array(dict['fine_labels'])
+def preprocess(file_path): 
+    dict = unpickle('cifar-100-python/train')
+    features = dict['data'].reshape(50000, 3, 32, 32).transpose(0, 2, 3, 1)
+    labels = np.array(dict['fine_labels'])
+    features = features / 255.0 
+    features = normalize(features)
+    features = features.astype(np.float32)
+    labels = labels.astype(np.int64)
+    features = features / 255.0 
+    features = normalize(features)
+    features = features.astype(np.float32)
+    labels = labels.astype(np.int64)
+    return features, labels
+
+def get_accuracy(y_true, y_score):
+    return top_k_accuracy_score(y_true, y_score, k=5, labels=list(range(0,100)))
+
+features, labels = preprocess('cifar-100-python/train')
+features_test, labels_test = preprocess('cifar-100-python/test')
+
 refresh_rate = 10
 #prep input 
-features = features / 255.0 
-features = normalize(features)
-features = features.astype(np.float32)
-labels = labels.astype(np.int64)
+
 
 train_labels_data = labels[:40000]
 val_features_data = features[40000:]
 
 val_features_data = features[40000:]
 val_labels_data = labels[40000:]
-bar = trange(4000)
+bar = trange(1)
 rng = tf.random.get_global_generator()
 rng.reset_from_seed(0x43966E87BD57227011B5B03B58785EC1)
 
-optomizer = AdamW(learning_rate=0.001)
+optomizer = AdamW()
 resnet = Classifier((64, 32, 32, 3), [64, 128], [(3,3), (3, 3)],num_classes=100, res_depths=[[128, 128] , [256,512], [512, 512]])
 acc = 0
 
@@ -57,8 +71,24 @@ for i in bar:
         y_score = resnet(tf.gather(val_features_data, batch_indices_val))
         y_true = tf.gather(val_labels_data, batch_indices_val)
 
-        acc = top_k_accuracy_score(y_true, y_score, k=5, labels=list(range(0,100)))
+        acc = get_accuracy(y_true, y_score)
     if i % refresh_rate == (refresh_rate - 1):
         bar.set_description(f"Step {i}; Cost => {cost.numpy():0.4f}, acc => {acc * 100:.2f}")
         bar.refresh()
 
+        
+
+individual_accuracies = []
+
+
+chunk_size = 1000
+for i in range(0, len(features_test), chunk_size):
+    chunk_images = features_test[i : i + chunk_size]
+    chunk_labels = labels_test[i : i + chunk_size]
+
+    chunk_predictions = resnet(chunk_images)
+    accuracy = get_accuracy(chunk_labels,chunk_predictions)
+
+    individual_accuracies.append(accuracy)
+
+mean_accuracy = np.mean(individual_accuracies)

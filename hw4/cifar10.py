@@ -45,7 +45,7 @@ def load_cfar10_batch(cifar10_dataset_folder_path, batch_id):
     return features, labels
 def load_cfar10_test():
     with open(
-        "cifar-10-batches-y/test_batch", mode="rb"
+        "cifar-10-batches-py/test_batch", mode="rb"
     ) as file:
         # note the encoding type is 'latin1'
 
@@ -109,7 +109,21 @@ train_features_data = np.pad(train_features_data, pad_width, constant_values=0)
 
 #train_features_data = tf.map_fn(random_crop, train_features_data, dtype=tf.float32)
 
+
 test_features, test_labels = load_cfar10_test()
+test_features = test_features / 255.0
+moments = tf.nn.moments(test_features, axes=[1, 2])
+mean = moments[0]
+stdev = moments[1]
+mean = np.repeat(mean[:, np.newaxis, np.newaxis, :], 32, axis=1)
+mean = np.repeat(mean, 32, axis=2)
+stdev = np.repeat(stdev[:, np.newaxis, np.newaxis, :], 32, axis=1)
+stdev = np.repeat(stdev, 32, axis=2)
+
+test_features = (test_features - mean) / np.sqrt(stdev)
+
+images_test_data = test_features.astype(np.float32)
+labels_test_data = np.array(test_labels).astype(np.int64)
 
 val_features_data = features[40000:]
 val_labels_data = labels[40000:]
@@ -122,6 +136,7 @@ rng.reset_from_seed(0x43966E87BD57227011B5B03B58785EC1)
 resnet = Classifier((64, 32, 32, 3), [64, 128], [(3,3), (3, 3)],num_classes=10, res_depths=[[128, 128] , [256,512], [512, 512]])
 
 acc = 0
+testacc = 0
 optimizer = AdamW(learning_rate=0.001, weight_decay=1e-5)
 for i in bar:
     with tf.GradientTape() as tape:
@@ -129,7 +144,7 @@ for i in bar:
         train_images_batch = tf.gather(features, batch_indices)
 
         train_labels_batch = tf.gather(labels, batch_indices)
-   #     train_images_batch = tf.map_fn(random_crop,   train_images_batch, dtype=tf.float32)
+   #    train_images_batch = tf.map_fn(random_crop,   train_images_batch, dtype=tf.float32)
         
         est_labels = resnet(train_images_batch)
 
@@ -143,8 +158,30 @@ for i in bar:
             resnet(tf.gather(val_features_data, batch_indices_val)),
             tf.gather(val_labels_data, batch_indices_val),
         )
+        testacc = get_accuracy(
+            resnet(tf.gather(images_test_data, batch_indices_val)),
+            tf.gather(labels_test_data, batch_indices_val),
+        )
 
 
     if i % refresh_rate == (refresh_rate - 1):
-        bar.set_description(f"Step {i}; Cost => {cost.numpy():0.4f}, acc => {acc}")
+        bar.set_description(f"Step {i}; Cost => {cost.numpy():0.4f}, acc => {acc} testacc => {testacc}")
         bar.refresh()
+
+individual_accuracies = []
+
+
+chunk_size = 1000
+for i in range(0, len(images_test_data), chunk_size):
+    chunk_images = images_test_data[i : i + chunk_size]
+    chunk_labels = labels_test_data[i : i + chunk_size]
+
+    chunk_predictions = resnet(chunk_images)
+
+    accuracy = get_accuracy(chunk_predictions, chunk_labels)
+
+    individual_accuracies.append(accuracy)
+
+mean_accuracy = np.mean(individual_accuracies)
+
+print(f"Accuracy: {mean_accuracy}%")

@@ -62,8 +62,8 @@ class Classifier(tf.Module):
                     input_depth=layer_depths[1], 
                     groups=[8,8], shortcut=shortcut) 
             )
-        self.res1_layer.append(tf.nn.relu)
-        self.res1_layer.append(AveragePool2d(ksize=4, strides=4))
+      
+        self.res1_layer.append(MaxPool2d(ksize=4, strides=4))
         self.dense_layer = [
     
             DropLayer(0.4),

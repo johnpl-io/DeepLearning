@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 import yaml
 from tqdm import trange
-
+import pickle
 from AdamW import AdamW
 from classifier import Classifier
 from util import *
@@ -33,7 +33,7 @@ def load_cfar10_batch(cifar10_dataset_folder_path, batch_id):
         cifar10_dataset_folder_path + "/data_batch_" + str(batch_id), mode="rb"
     ) as file:
         # note the encoding type is 'latin1'
-        import pickle
+
 
         batch = pickle.load(file, encoding="latin1")
 
@@ -43,6 +43,22 @@ def load_cfar10_batch(cifar10_dataset_folder_path, batch_id):
     labels = batch["labels"]
 
     return features, labels
+def load_cfar10_test():
+    with open(
+        "cifar-10-batches-y/test_batch", mode="rb"
+    ) as file:
+        # note the encoding type is 'latin1'
+
+
+        batch = pickle.load(file, encoding="latin1")
+
+    features = (
+        batch["data"].reshape((len(batch["data"]), 3, 32, 32)).transpose(0, 2, 3, 1)
+    )
+    labels = batch["labels"]
+
+    return features, labels
+
 
 
 def get_accuracy(est_output, correct_label):
@@ -89,13 +105,15 @@ padding_size = 4
 
 train_labels_data = labels[:40000]
 pad_width = [(0, 0), (4, 4), (4, 4), (0, 0)]
-#train_features_data = np.pad(train_features_data, pad_width, constant_values=0)
+train_features_data = np.pad(train_features_data, pad_width, constant_values=0)
 
 #train_features_data = tf.map_fn(random_crop, train_features_data, dtype=tf.float32)
 
+test_features, test_labels = load_cfar10_test()
+
 val_features_data = features[40000:]
 val_labels_data = labels[40000:]
-bar = trange(4000)
+bar = trange(2000)
 
 rng = tf.random.get_global_generator()
 rng.reset_from_seed(0x43966E87BD57227011B5B03B58785EC1)
@@ -111,7 +129,8 @@ for i in bar:
         train_images_batch = tf.gather(features, batch_indices)
 
         train_labels_batch = tf.gather(labels, batch_indices)
-
+   #     train_images_batch = tf.map_fn(random_crop,   train_images_batch, dtype=tf.float32)
+        
         est_labels = resnet(train_images_batch)
 
         cost = get_loss(labels=train_labels_batch, logits=est_labels)

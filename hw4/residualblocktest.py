@@ -1,5 +1,6 @@
-import tensorflow as tf
 import pytest
+import tensorflow as tf
+
 from ResidualBlock import ResidualBlock
 
 

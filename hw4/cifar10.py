@@ -1,34 +1,26 @@
-import argparse
-from pathlib import Path
+import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-import yaml
-from tqdm import trange
-import pickle
+
 from AdamW import AdamW
 from Classifier import Classifier
 from util import *
-
-parser = argparse.ArgumentParser(
-    prog="MNIST classifier",
-    description="Classifieres MNIST",
-)
 
 
 def load_preprocess(cifar10_dataset_folder_path, batch_ids=None):
     features_list = []
     labels_list = []
     for id in batch_ids:
-        features, labels = load_cfar10_batch(cifar10_dataset_folder_path, id)
+        features, labels = load_cfar10(cifar10_dataset_folder_path, id)
         features_list.append(features)
         labels_list.append(labels)
 
     return np.array(features_list), np.array(labels_list)
 
 
-def load_cfar10_batch(cifar10_dataset_folder_path, batch_id):
+def load_cfar10(cifar10_dataset_folder_path, batch_id):
     with open(
         cifar10_dataset_folder_path + "/data_batch_" + str(batch_id), mode="rb"
     ) as file:
@@ -63,10 +55,7 @@ def get_accuracy(correct_label, est_output):
     return accuracy
 
 
-parser.add_argument("-c", "--config", type=Path, default=Path("config.yaml"))
-args = parser.parse_args()
-config = yaml.safe_load(args.config.read_text())
-refresh_rate = config["display"]["refresh_rate"]
+refresh_rate = 10
 features, labels = load_preprocess("cifar-10-batches-py", [1, 2, 3, 4, 5])
 
 features = features.reshape(50000, 32, 32, 3)
@@ -83,7 +72,7 @@ train_features_data = features[:40000]
 train_labels_data = labels[:40000]
 
 
-#train_features_data = pad(train_features_data)
+train_features_data = pad(train_features_data)
 
 test_features, test_labels = load_cfar10_test()
 test_features = test_features / 255.0
@@ -107,10 +96,20 @@ resnet = Classifier(
     out_layer=512,
     num_classes=10,
     res_depths=[[128, 128], [256, 512], [512, 512]],
-    
 )
 
 
 optimizer = AdamW(learning_rate=0.01, weight_decay=1e-5)
-train_model(resnet, optimizer, train_features_data, train_labels_data, val_features_data, val_labels_data, 1000, get_accuracy, get_loss, rng)
+train_model(
+    resnet,
+    optimizer,
+    train_features_data,
+    train_labels_data,
+    val_features_data,
+    val_labels_data,
+    1000,
+    get_accuracy,
+    get_loss,
+    rng,
+)
 get_testacc(resnet, images_test_data, labels_test_data, get_accuracy)

@@ -1,5 +1,5 @@
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 from tqdm import trange
 
 # Utility functions
@@ -28,9 +28,11 @@ def random_crop(image):
     cropped_image = tf.image.random_crop(image, size=(32, 32, 3))
     return cropped_image
 
+
 def pad(image_data):
     pad_width = [(0, 0), (4, 4), (4, 4), (0, 0)]
     return np.pad(image_data, pad_width, constant_values=0)
+
 
 def augment(image_data):
     image_data = pad(image_data)
@@ -57,7 +59,9 @@ def train_model(
             batch_indices = rng.uniform(shape=[512], maxval=40000, dtype=tf.int32)
             train_images_batch = tf.gather(train_data, batch_indices)
             train_labels_batch = tf.gather(train_label, batch_indices)
-            train_images_batch =  tf.map_fn(random_crop, train_images_batch, dtype=tf.float32)
+            train_images_batch = tf.map_fn(
+                random_crop, train_images_batch, dtype=tf.float32
+            )
             est_labels = resnet(train_images_batch)
 
             cost = get_loss(labels=train_labels_batch, logits=est_labels)

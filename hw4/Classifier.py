@@ -1,14 +1,15 @@
-import tensorflow as tf
+import math
 
 import numpy as np
+import tensorflow as tf
+
+from AveragePool import AveragePool2d
 from Conv2d import Conv2d
 from Dense import DenseLayer
-import math
 from dropout import DropLayer
-from ResidualBlock import ResidualBlock
 from GroupNorm import GroupNorm
 from MaxPool2d import MaxPool2d
-from AveragePool import AveragePool2d
+from ResidualBlock import ResidualBlock
 
 
 class Classifier(tf.Module):
@@ -57,13 +58,13 @@ class Classifier(tf.Module):
                 groups=[8, 8],
             )
         ]
-     
+
         for i in range(1, len(res_depths) - 1):
             shortcut = False
             if i == 0:
                 input_depth = layer_depths[1]
             else:
-                input_depth = self.res1_layer[i-1].layers[-2].output_shape
+                input_depth = self.res1_layer[i - 1].layers[-2].output_shape
             if input_depth != res_depths[i][1]:
                 shortcut = True
             self.res1_layer.append(
@@ -72,7 +73,7 @@ class Classifier(tf.Module):
                     depths=res_depths[i],
                     input_depth=input_depth,
                     groups=[8, 8],
-                    shortcut=shortcut
+                    shortcut=shortcut,
                 )
             )
 
@@ -97,7 +98,3 @@ class Classifier(tf.Module):
                 x = dense_layer(x)
 
         return x
-
-
-
-

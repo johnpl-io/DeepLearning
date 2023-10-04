@@ -1,15 +1,12 @@
-import argparse
-from pathlib import Path
+import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-import yaml
-from tqdm import trange
 from sklearn.metrics import top_k_accuracy_score
+
 from AdamW import AdamW
 from Classifier import Classifier
-import pickle
 from util import *
 
 
@@ -60,7 +57,7 @@ resnet = Classifier(
     [(3, 3), (3, 3)],
     out_layer=512,
     num_classes=100,
-    res_depths=[[128, 128], [128,128], [256, 512], [512, 512]],
+    res_depths=[[128, 128], [128, 128], [256, 512], [512, 512]],
 )
 
 train_model(

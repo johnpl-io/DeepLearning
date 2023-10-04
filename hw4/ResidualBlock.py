@@ -23,16 +23,15 @@ class ResidualBlock(tf.Module):
             activation,
             Conv2d(input_depth, depths[0], kernels[0], strides=(1, 1), padding="SAME"),
             GroupNorm(depths[0], 8),
-
-            activation, 
-             Conv2d(
+            activation,
+            Conv2d(
                 input_depth=depths[0],
                 kernel_size=kernels[1],
                 filters=depths[1],
                 strides=(1, 1),
                 padding="SAME",
             ),
-            GroupNorm(depths[1], 8)
+            GroupNorm(depths[1], 8),
         ]
 
         self.activation = activation

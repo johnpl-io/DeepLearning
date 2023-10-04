@@ -1,11 +1,8 @@
 import tensorflow as tf
 import pytest
 from GroupNorm import GroupNorm
-
 rng = tf.random.get_global_generator()
 rng.reset_from_seed(2384230948)
-
-
 @pytest.mark.parametrize(
     "shape, C, G",
     [([3, 32, 32, 10], 10, 5), ([3, 16, 16, 25], 25, 5)],
@@ -16,8 +13,8 @@ def test_sizeprop(shape, C, G):
     x = rng.uniform(shape=shape)
     Group = GroupNorm(C=C, G=G)
     z = Group(x)
-    tf.debugging.assert_near(tf.math.reduce_mean(z), 0.0, atol=0.01)
-    tf.debugging.assert_near(tf.math.reduce_std(z), 1.0, atol=0.01)
+    tf.debugging.assert_near(tf.math.reduce_mean(z), 0., atol=0.01)
+    tf.debugging.assert_near(tf.math.reduce_std(z), 1., atol=0.01)
     tf.assert_equal(x.shape, z.shape)
 
 

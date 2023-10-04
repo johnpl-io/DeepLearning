@@ -5,7 +5,7 @@ import pytest
 import tensorflow as tf
 
 from AdamW import AdamW
-from classifier import Classifier
+from Classifier import Classifier
 from Conv2d import Conv2d
 from Dense import DenseLayer
 from dropout import DropLayer

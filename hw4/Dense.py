@@ -14,7 +14,7 @@ class DenseLayer(tf.Module):
         rng = tf.random.get_global_generator()
 
         self.w = tf.Variable(
-            tf.zeros(shape=[num_inputs, num_outputs]),
+            initializer(shape=[num_inputs, num_outputs]),
             trainable=True,
             name="Linear/w",
         )

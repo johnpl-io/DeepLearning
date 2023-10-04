@@ -6,7 +6,7 @@ import tensorflow as tf
 from AveragePool import AveragePool2d
 from Conv2d import Conv2d
 from Dense import DenseLayer
-from dropout import DropLayer
+from Dropout import DropLayer
 from GroupNorm import GroupNorm
 from MaxPool2d import MaxPool2d
 from ResidualBlock import ResidualBlock

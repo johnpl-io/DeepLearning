@@ -8,7 +8,7 @@ from AdamW import AdamW
 from Classifier import Classifier
 from Conv2d import Conv2d
 from Dense import DenseLayer
-from dropout import DropLayer
+from Dropout import DropLayer
 
 rng = tf.random.get_global_generator()
 rng.reset_from_seed(2384230948)

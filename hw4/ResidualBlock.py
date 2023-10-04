@@ -20,14 +20,16 @@ class ResidualBlock(tf.Module):
             self.shortcut = Conv2d(input_depth, depths[-1], (1, 1), padding="SAME")
             self.norm1 = GroupNorm(depths[-1], 1)
         self.layers = [
+            activation,
             Conv2d(input_depth, depths[0], kernels[0], strides=(1, 1), padding="SAME"),
             GroupNorm(depths[0], 8),
-            activation,
+        
         ]
-
+    
+        self.layers.append(activation)
         self.layers.append(
                 Conv2d(
-                    input_depth=self.layers[0].output_shape,
+                    input_depth=depths[0],
                     kernel_size=kernels[1],
                     filters=depths[1],
                     strides=(1, 1),
@@ -35,7 +37,6 @@ class ResidualBlock(tf.Module):
                 )
             )
         self.layers.append(GroupNorm(depths[1], 8))
-        self.layers.append(activation)
 
 
         self.activation = activation

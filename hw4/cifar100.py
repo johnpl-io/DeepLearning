@@ -16,9 +16,9 @@ def unpickle(file):
         myDict = pickle.load(fo, encoding='latin1')
     return myDict
 
-def preprocess(file_path): 
-    dict = unpickle('cifar-100-python/train')
-    features = dict['data'].reshape(50000, 3, 32, 32).transpose(0, 2, 3, 1)
+def preprocess(file_path, N): 
+    dict = unpickle(file_path)
+    features = dict['data'].reshape(N, 3, 32, 32).transpose(0, 2, 3, 1)
     labels = np.array(dict['fine_labels'])
     features = features / 255.0 
     features = normalize(features)
@@ -30,26 +30,27 @@ def preprocess(file_path):
     labels = labels.astype(np.int64)
     return features, labels
 
-def get_accuracy(y_true, y_score):
+def get_accuracy(y_score, y_true):
     return top_k_accuracy_score(y_true, y_score, k=5, labels=list(range(0,100)))
 
-features, labels = preprocess('cifar-100-python/train')
-features_test, labels_test = preprocess('cifar-100-python/test')
+features, labels = preprocess('cifar-100-python/train', 50000)
+features_test, labels_test = preprocess('cifar-100-python/test', 10000)
+
+
+
 
 refresh_rate = 10
-#prep input 
-
 
 train_labels_data = labels[:40000]
 val_features_data = features[40000:]
-
+val_features_data = tf.map_fn(random_crop, val_features_data, dtype=tf.float32)
 val_features_data = features[40000:]
 val_labels_data = labels[40000:]
-bar = trange(1)
+bar = trange(1000)
 rng = tf.random.get_global_generator()
 rng.reset_from_seed(0x43966E87BD57227011B5B03B58785EC1)
 
-optomizer = AdamW()
+optomizer = AdamW(learning_rate=0.001,weight_decay=0.01)
 resnet = Classifier((64, 32, 32, 3), [64, 128], [(3,3), (3, 3)],num_classes=100, res_depths=[[128, 128] , [256,512], [512, 512]])
 acc = 0
 
@@ -66,11 +67,11 @@ for i in bar:
         grads = tape.gradient(cost, resnet.trainable_variables)
         optomizer.apply_gradients(grads, resnet.trainable_variables)
 
-    if i % 10 == 9:
+    if i % 100 == 99:
         batch_indices_val = rng.uniform(shape=[256], maxval=10000, dtype=tf.int32)
         y_score = resnet(tf.gather(val_features_data, batch_indices_val))
         y_true = tf.gather(val_labels_data, batch_indices_val)
-
+      
         acc = get_accuracy(y_true, y_score)
     if i % refresh_rate == (refresh_rate - 1):
         bar.set_description(f"Step {i}; Cost => {cost.numpy():0.4f}, acc => {acc * 100:.2f}")
@@ -92,3 +93,4 @@ for i in range(0, len(features_test), chunk_size):
     individual_accuracies.append(accuracy)
 
 mean_accuracy = np.mean(individual_accuracies)
+print("accuracy", mean_accuracy*100)

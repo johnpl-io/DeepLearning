@@ -65,7 +65,7 @@ class Classifier(tf.Module):
       
         self.res1_layer.append(MaxPool2d(ksize=4, strides=4))
         self.dense_layer = [
-    
+             
             DropLayer(0.4),
             DenseLayer(512, 100)
         ]

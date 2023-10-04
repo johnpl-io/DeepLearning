@@ -137,14 +137,14 @@ resnet = Classifier((64, 32, 32, 3), [64, 128], [(3,3), (3, 3)],num_classes=10, 
 
 acc = 0
 testacc = 0
-optimizer = AdamW(learning_rate=0.001, weight_decay=1e-5)
+optimizer = AdamW(learning_rate=0.01, weight_decay=1e-5)
 for i in bar:
     with tf.GradientTape() as tape:
         batch_indices = rng.uniform(shape=[512], maxval=40000, dtype=tf.int32)
         train_images_batch = tf.gather(features, batch_indices)
 
         train_labels_batch = tf.gather(labels, batch_indices)
-   #    train_images_batch = tf.map_fn(random_crop,   train_images_batch, dtype=tf.float32)
+        train_images_batch = tf.map_fn(random_crop,   train_images_batch, dtype=tf.float32)
         
         est_labels = resnet(train_images_batch)
 

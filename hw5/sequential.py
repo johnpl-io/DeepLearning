@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tqdm import trange
 
-from dense import DenseLayer
+from Dense import DenseLayer
 from Dropout import DropLayer
 
 

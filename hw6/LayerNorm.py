@@ -20,5 +20,5 @@ module = LayerNorm(shape=100)
 x = tf.random.normal(shape=[32, 100])
 
 y = module(x)
-breakpoint()
+
 

@@ -28,7 +28,7 @@ class DenseLayer(tf.Module):
 
         if self.bias:
             self.b = tf.Variable(
-                he_init(
+                tf.zeros(
                     shape=[1, num_outputs],
                 ),
                 trainable=True,

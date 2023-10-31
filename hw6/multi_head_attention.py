@@ -24,11 +24,15 @@ class MultiHeadAttention(tf.Module):
         q_dot_v = tf.einsum('b h e d,  b h j d -> b h e j', query, key) * self.dim_k ** -0.5
        
         if self.mask:
-            inf_mask = tf.fill(q_dot_v.shape, np.finfo(np.float32).min)  #float(-inf) breaks softmax https://github.com/tensorflow/tensorflow/issues/11756
-            q_dot_v = q_dot_v + tf.linalg.band_part(inf_mask, 0, -1)
-            
-        out_softmax = tf.nn.softmax(q_dot_v)
+            inf_mask = tf.fill(q_dot_v.shape, float('-inf'))  #float(-inf) breaks softmax https://github.com/tensorflow/tensorflow/issues/11756
+            inf_mask = tf.linalg.band_part(inf_mask, 0, -1)
+            inf_mask = tf.linalg.set_diag(inf_mask, tf.zeros(inf_mask.shape[0:-1]))
+            q_dot_v = q_dot_v + inf_mask
 
+
+            
+        out_softmax = tf.nn.softmax(q_dot_v, -1)
+       
      #   test = tf.nn.softmax(q_dot_v)
        # if self.mask:
          #   out_softmax = tf.linalg.band_part(out_softmax, -1, 0)

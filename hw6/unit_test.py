@@ -11,7 +11,7 @@ rng.reset_from_seed(2384230948)
 def test_causual_mask():
 
     x = tf.random.normal(shape = [4, 10, 32])
-    head = MultiHeadAttention(32, 16, 10, False)
+    head = MultiHeadAttention(32, 16, 10, True)
 
  
     

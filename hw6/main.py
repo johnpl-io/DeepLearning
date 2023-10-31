@@ -46,7 +46,7 @@ is_train = np.array([True])
 model = TransformerDecoder(
     dim_model=512, heads=8, blocks=1, vocab_size=len(vocab), is_train=is_train
 )
-breakpoint()
+
 
 def train(model, optimizer, input_text, output_text, iterations, get_loss):
     bar = trange(iterations)

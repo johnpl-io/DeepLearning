@@ -49,21 +49,7 @@ def test_shape_transformer_block():
     x = tf.random.uniform(shape=[4, 10, 32])
     transformer = TransformerBlock(32, 16, 10, 0.1, mask=True)
     z = transformer(x)
-    tf.assert_equal(z.shape, x.shape)
-'''
-def test_shape_transformer_block():
-    x = tf.convert_to_tensor([[0, 2, 3, 4, 5, 2, 3, 6, 7, 8, 9]])
-
-    model = TransformerDecoder(
-    dim_model=512, heads=8, blocks=5, is_train=[False], vocab_size=10)
-
-    with tf.GradientTape(persistent=True) as tape:
-        tape.watch(x)
-        z = model(x)
-        grad = tape.gradient(z, {"x": x})
-    breakpoint()
-'''
-'''    
+    tf.assert_equal(z.shape, x.shape) 
 def test_grad_mha():
     x = tf.random.normal(shape=[4, 10, 32])
     head = MultiHeadAttention(32, 16, 10, False)
@@ -74,8 +60,6 @@ def test_grad_mha():
     for grad, var in zip(grads, head.trainable_variables):
         tf.debugging.check_numerics(grad, message=f"{var.name}: ")
         tf.debugging.assert_greater(tf.math.abs(grad), 0.0)
-'''
-  
 
 def test_causual_mask():
     x = tf.random.normal(shape=[1, 10, 5])
@@ -85,9 +69,11 @@ def test_causual_mask():
         tape.watch(x)
         z = head(x)
         z2 = head2(x)
-    grad = tape.batch_jacobian(z, x)
-    grad2 = tape.batch_jacobian(z2, x)
+    jacobian_with_mask = tape.batch_jacobian(z, x)
+    jacobian_no_mask = tape.batch_jacobian(z2, x)
     breakpoint()
+    tf.debugging.assert_near(jacobian_with_mask[0, 0, 1:5, 1:], 0.0)
+    tf.debugging.assert_none_equal(jacobian_no_mask[0, 0, 1:5, 1:], 0.0)
 
 
-grad[0][0][4][1:]
+

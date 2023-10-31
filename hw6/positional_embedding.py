@@ -24,7 +24,7 @@ class PositionalEmbedding(tf.Module):
         
         length = int(tf.shape(x)[-1])
         x = tf.nn.embedding_lookup(self.embedding, tf.cast(x, tf.int32))
-        return x + self.pos_encoding(length)
+        return x*tf.math.sqrt(tf.cast(self.dim_model, tf.float32)) + self.pos_encoding(length)
     
 x = np.array([[0,1,2,3]])
 

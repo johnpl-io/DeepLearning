@@ -39,4 +39,3 @@ class TransformerDecoder(tf.Module):
         return self.fc(x)
 
 
-model = TransformerDecoder(64, 8,1, 5, 4)

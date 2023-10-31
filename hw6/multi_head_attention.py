@@ -24,18 +24,13 @@ class MultiHeadAttention(tf.Module):
         q_dot_v = tf.einsum('b h e d,  b h j d -> b h e j', query, key) * self.dim_k ** -0.5
        
         if self.mask:
-            inf_mask = tf.fill(q_dot_v.shape, float('-inf'))  #float(-inf) breaks softmax https://github.com/tensorflow/tensorflow/issues/11756
-            inf_mask = tf.linalg.band_part(inf_mask, 0, -1)
-            inf_mask = tf.linalg.set_diag(inf_mask, tf.zeros(inf_mask.shape[0:-1]))
-            q_dot_v = q_dot_v + inf_mask
-
-
+          inf_mask = tf.fill(q_dot_v.shape, float('-inf'))  #float(-inf) breaks softmax https://github.com/tensorflow/tensorflow/issues/11756
+          inf_mask = tf.linalg.band_part(inf_mask, 0, -1)
+          inf_mask = tf.linalg.set_diag(inf_mask, tf.zeros(inf_mask.shape[0:-1]))
+          q_dot_v = q_dot_v + inf_mask
             
         out_softmax = tf.nn.softmax(q_dot_v, -1)
-       
-     #   test = tf.nn.softmax(q_dot_v)
-       # if self.mask:
-         #   out_softmax = tf.linalg.band_part(out_softmax, -1, 0)
+
         out_softmax_dot_k = tf.einsum('b h e j,  b h j d -> b h e d',   out_softmax , value)
 
         out_concat = einops.rearrange(out_softmax_dot_k, 'b h e d -> b e (h d)')

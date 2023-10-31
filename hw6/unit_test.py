@@ -20,6 +20,7 @@ def test_causual_mask():
         z = head(x)
         loss = tf.math.reduce_mean(z**2)
     grads = tape.gradient(loss, head.trainable_variables)
+    grad = tape.gradient(z, {'x': x})
     breakpoint()
     for grad, var in zip(grads, head.trainable_variables):
         tf.debugging.check_numerics(grad, message=f"{var.name}: ")

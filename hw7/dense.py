@@ -1,5 +1,9 @@
 import tensorflow as tf
 
+def he_init_uniform(shape):
+    in_dim, out_dim = shape
+    weight_vals = tf.random.uniform(shape=shape, minval=- tf.math.sqrt(1 / in_dim), maxval= tf.math.sqrt(1 / in_dim))
+    return weight_vals
 
 def he_init(shape):
     # Computes the He initialization values for a weight matrix
@@ -16,7 +20,7 @@ class DenseLayer(tf.Module):
         num_outputs,
         bias=True,
         activation=tf.identity,
-        initializer=he_init,
+        initializer=he_init_uniform,
     ):
         self.w = tf.Variable(
             initializer(shape=[num_inputs, num_outputs]),

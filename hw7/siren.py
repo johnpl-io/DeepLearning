@@ -23,11 +23,11 @@ class Siren(tf.Module):
                 )
             )
 
-        #last layer
-    #    self.layers.append(DenseLayer(num_inputs=hidden_layer_width, num_outputs=num_outputs, activation=tf.nn.softmax))
+      #  last layer
+        self.layers.append(DenseLayer(num_inputs=hidden_layer_width, num_outputs=num_outputs, activation=tf.nn.relu))
 
 
-        self.layers.append(SineLayer(num_inputs=hidden_layer_width, num_outputs=num_outputs, siren_initializer=siren_init_layer))
+      #  self.layers.append(SineLayer(num_inputs=hidden_layer_width, num_outputs=num_outputs, siren_initializer=siren_init_layer))
 
     def __call__(self, x):
         for layer in self.layers:

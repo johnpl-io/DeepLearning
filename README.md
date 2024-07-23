@@ -1,2 +1,2 @@
 # Coursework for ECE472
-- see syllabus.pdf for assignments.
+- see syllabus.pdf for assignments
